@@ -1,0 +1,54 @@
+---
+
+- name: allow TCP LDAP Connection to AD
+  iptables:
+    chain: TCP_OUT
+    action: insert
+    protocol: tcp
+    destination_port: 139,389,88,445,464
+    match: multiport
+    jump: ACCEPT
+    comment: Accept ActiveDirectory connections [output].
+
+- name: allow UDP LDAP Connection to AD
+  iptables:
+    chain: UDP_OUT
+    action: insert
+    protocol: udp
+    destination_port: 389,137,138
+    match: multiport
+    jump: ACCEPT
+    comment: Accept ActiveDirectory connections [output].
+
+- name: Save iptables changes
+  shell: iptables-save > /etc/iptables/rules.v4
+
+- name: Add AD domain to Search list
+  lineinfile:
+    path: /etc/netplan/50-cloud-init.yaml
+    line: "                - ad.burfa.net"
+    insertafter: "vsphere.torn.levira.ee.burfa.net"
+
+- name: netplan apply
+  shell: "/usr/sbin/netplan apply"
+
+- name: add AD to hosts file
+  lineinfile:
+      path: /etc/hosts
+      line: '10.100.41.3 dc1.ad.burfa.net dc1'
+
+- name: add netbios name to hosts file
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    line: '127.0.0.1	{{ hostvars[inventory_hostname]["netbios_name"] }}.{{ active_directory_domain }} localhost {{ hostvars[inventory_hostname]["ansible_hostname"] }} {{ hostvars[inventory_hostname]["netbios_name"] }}'
+
+- name: initialize Kerberos
+  expect:
+    command: "kinit {{ ad_user }}"
+    responses:
+      Password for *: "{{ ad_password }}"
+
+- name: join server to ad
+  shell: "net ads join -k -S {{ active_directory_fqdn }}"
+  notify: restart freeradius

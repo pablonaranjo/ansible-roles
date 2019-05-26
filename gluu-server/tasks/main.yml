@@ -1,0 +1,5 @@
+---
+# tasks file for /Users/pablonaranjo/repos/Ansible/roles/gluu-server
+
+- import_tasks: preparation.yml
+- import_tasks: installation.yml

@@ -1,0 +1,6 @@
+---
+
+- name: Apt install packages
+  apt:
+    name: "{{ psql_packages }}"
+    update_cache: yes

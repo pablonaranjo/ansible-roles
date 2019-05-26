@@ -1,0 +1,6 @@
+---
+
+- name: copy haproxy config file
+  copy:
+    src: haproxy.cfg
+    dest: /etc/haproxy/haproxy.cfg

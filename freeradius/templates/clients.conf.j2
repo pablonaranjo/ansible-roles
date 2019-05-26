@@ -1,0 +1,32 @@
+client localhost {
+	ipaddr = 127.0.0.1
+	proto = *
+	secret = {{ default_freeradius_secret }}
+	require_message_authenticator = no
+	nas_type	 = other	# localhost isn't usually a NAS...
+	limit {
+		max_connections = 16
+		lifetime = 0
+		idle_timeout = 30
+	}
+}
+client localhost_ipv6 {
+	ipv6addr	= ::1
+	secret		= {{ default_freeradius_secret }}
+}
+
+{% if inventory_hostname in groups['freeradius-home'] %}
+{% for client in freeradius_client %}
+client {{ client.network }} {
+secret = {{ freeradius_secret }}
+nastype = other
+}
+{% endfor %}
+{% else %}
+{% for client in freeradius_proxy_client %}
+client {{ client.network }} {
+secret = {{ freeradius_secret }}
+nastype = other
+}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,12 @@
+---
+# vars file for openldap-proxy
+
+openldap_packages:
+  - slapd
+  - ldap-utils
+
+ad_domain: testad.testburfa.net
+ad_hostname: 10.101.144.210
+ad_base_dn: "DC=testad,DC=testburfa,DC=net"
+ad_bind_pass: <>
+ad_root_dn: CN=<>,CN=Users,DC=testad,DC=testburfa,DC=net

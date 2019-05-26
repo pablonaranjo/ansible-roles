@@ -1,0 +1,11 @@
+---
+
+- name: add haproxy repository
+  apt_repository:
+    repo: ppa:vbernat/haproxy-{{ haproxy_version }}
+    state: present
+
+- name: install haproxy packages
+  apt:
+    name: '{{ haproxy_packages }}'
+    update_cache: true

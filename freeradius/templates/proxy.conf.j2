@@ -1,0 +1,19 @@
+{% for host in groups['freeradius-home'] %}
+home_server {{ hostvars[host]['ansible_hostname'] }} {
+ type = auth
+ ipaddr = {{ hostvars[host]['ansible_default_ipv4']['address'] }}
+ port = 1812
+ secret = {{ freeradius_secret }}
+}
+{% endfor %}
+home_server_pool remote_radius_failover {
+ type = load-balance
+{% for host in groups['freeradius-home'] %}
+ home_server = {{ hostvars[host]['ansible_hostname'] }}
+{% endfor %}
+}
+
+realm DEFAULT {
+ auth_pool = remote_radius_failover
+ type = nostrip
+}

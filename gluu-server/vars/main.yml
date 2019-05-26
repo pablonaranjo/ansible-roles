@@ -1,0 +1,10 @@
+---
+# vars file for /Users/pablonaranjo/repos/Ansible/roles/gluu-server
+
+gluu_dependencies:
+  - python-minimal
+  - python-pip
+  - default-jre
+
+gluu_package:
+  - gluu-server-3.1.6

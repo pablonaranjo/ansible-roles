@@ -1,0 +1,10 @@
+---
+# tasks file for haproxy
+
+- include_tasks: install-packages.yml
+- include_tasks: config-haproxy.yml
+
+- name: restart service
+  service:
+    name: haproxy
+    state: restarted

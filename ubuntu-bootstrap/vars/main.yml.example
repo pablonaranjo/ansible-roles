@@ -1,0 +1,45 @@
+---
+# vars file for ubuntu-bootstrap
+
+# USERS
+
+groups_to_create:
+    - {
+        name: 'hashcoins',
+        gid: '2000'
+      }
+    - {
+        name: 'cyberland',
+        gid: '2200'
+      }
+
+# USERS
+users_to_create:
+  - {
+      name: 'pablon',
+      fullname: 'Pablo Naranjo',
+      group: 'pablon',
+      uid: '2203',
+      groups: 'sudo,cyberland',
+      auth_key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBxxRxObC7u6xHN/JHx2OF32FfMGe/sOy+W/t12jc0xB pablo.naranjo@cyberland.io'
+    }
+  - {
+      name: 'simoni',
+      fullname: 'Simon Inkin',
+      group: 'simoni',
+      uid: '2001',
+      groups: 'sudo,hashcoins,cyberland',
+      auth_key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPjAgqaTnMNq4muAqfqz1zr0iMBIeVXPbUYWlamHoamk simon@Simons-MBP.lan'
+    }
+  - {
+      name: 'romank',
+      fullname: 'Roman Kononov',
+      group: 'romank',
+      uid: '2201',
+      groups: 'sudo,cyberland',
+      auth_key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGJHDSN839wuHkstd5nykVYlhBmXKvnYudrHYsUQt06y kononov@adm001hctln.local'
+    }
+
+# NTP
+
+ntp_server: ntp.burfa.net

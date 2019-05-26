@@ -1,0 +1,74 @@
+---
+# vars file for vmware-ubuntu-server
+
+#Vcenter vars
+vmware_vcenter_hostname: 10.100.1.10
+vmware_username: ansible@vsphere.local
+vmware_password: nDtGinYpgT88B@U%
+
+#VM Detail
+vmware_vm_hostname: cl-infr-test-gluu-02
+# folder. Could be:
+# VMs/Estonia/Cyberland/Infrastructure/Production
+# VMs/Estonia/Cyberland/Infrastructure/Test
+# VMs/Estonia/HashCoins/Mining Bot Application/Staging
+vmware_vm_folder: VMs/Estonia/Cyberland/Infrastructure/Test
+
+# datastore. Select one of:
+# Storwize_R6_000
+# Storwize_R6_001
+# Storwize_R6_002
+# Storwize_R6_003
+# Storwize_R6_004
+vmware_vm_datastore: Storwize_R6_001
+
+# vlan. Select one of:
+# EE-ACO-LKM-STAG
+# EE-BC-CORE-DC-PROD
+# EE-BC-CORE-PROD
+# EE-BC-HIDN-DNS-PROD
+# EE-BC-INFR-PROD
+# EE-BC-PUB-PROD
+# EE-BC-SEC-AUR-PROD
+# EE-BC-SEC-B83-PROD
+# EE-BC-SEC-LAKI-PROD
+# EE-BC-SEC-SCLA-PROD
+# EE-BC-VPN-OVPN-PROD
+# EE-CL-INFR-PROD
+# EE-CL-SHAR-TEST-T1
+# EE-CL-SHAR-TEST-T2
+# EE-HC-HF-STAG
+# EE-HC-LAKI-PROD
+# EE-HC-MBA-STAG
+# EE-HC-MFM-PROD
+# EE-HC-MFM-STAG
+vmware_vm_network: EE-CL-SHAR-TEST-T1
+
+# template. Select:
+# ubuntu-base
+vmware_vm_template: ubuntu18-base
+
+vmware_vm_ip: 10.101.144.227/24
+vmware_vm_gateway: 10.101.144.1
+vmware_vm_dns1: 10.100.32.32
+vmware_vm_dns2: 10.100.32.23
+vmware_dns_search: vsphere.torn.levira.ee.burfa.net
+
+vmware_vm_memory: 1024
+vmware_vm_cpus: 1
+vmware_vm_os: ubuntu64Guest
+vmware_vm_size_disk: 16
+
+#vmware_iso_path: "[Storwize_R6_000] install/ubuntu-18.04.1.0-live-server-amd64.iso"
+
+vmware_datacenter: EE-LVRA-TORN
+
+#esx_host. Select one of:
+# esx1.hc.local
+# esx2.hc.local
+# esx3.hc.local
+vmware_esxi_host: esx1.hc.local
+
+ubuntu_local_user: nakamoto
+ubuntu_local_pass: lemma-actor-valued-biddy
+ubuntu_sudo_pass: lemma-actor-valued-biddy

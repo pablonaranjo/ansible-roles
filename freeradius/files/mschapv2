@@ -1,0 +1,20 @@
+server default {
+listen {
+  	type = "auth"
+  	ipaddr = *
+  	port = 1812
+}
+authorize {
+    preprocess
+    mschap
+    suffix
+    eap
+    files
+}
+authenticate {
+    Auth-Type MS-CHAP {
+        mschap
+    }
+    eap
+}
+}

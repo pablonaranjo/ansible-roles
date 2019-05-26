@@ -1,0 +1,12 @@
+---
+
+- name: install freeradius packages
+  apt:
+    name: "{{ freeradius_packages }}"
+    update_cache: yes
+
+- name: install packages for AD auth
+  apt:
+    name: "{{ home_server_packages }}"
+    update_cache: yes
+  when: inventory_hostname in groups['freeradius-home']

@@ -1,0 +1,9 @@
+---
+
+- name: Config timesyncd
+  template:
+    src: timesyncd.conf.j2
+    dest: /etc/systemd/timesyncd.conf
+  notify: restart timedatactl
+  tags:
+    - config-ntp  

@@ -1,0 +1,46 @@
+---
+# vars file for pgsql-server
+
+psql_packages:
+  - postgresql
+  - postgresql-contrib
+  - python-psycopg2
+
+postgres_uid: 10221
+postgres_gid: 10221
+
+psql_port: 30501
+
+psql_replicate_pwd: <replicate_pwd> #in 1Password
+
+psql_master_replace_config:
+  - {
+    string_to_replace: "#wal_level = replica",
+    replace_with: "wal_level = hot_standby"
+    }
+  - {
+    string_to_replace: "#wal_keep_segments = 0",
+    replace_with: "wal_keep_segments = 32"
+    }
+  - {
+    string_to_replace: "#max_wal_senders = 10",
+    replace_with: "max_wal_senders = 5"
+    }
+  - {
+    string_to_replace: "#archive_mode = off",
+    replace_with: "archive_mode = on"
+    }
+  - {
+    string_to_replace: "#archive_command = ''",
+    replace_with: "archive_command = 'cp %p /usr/local/pgsql/archive/%f'"
+    }
+
+psql_replica_replace_config:
+  - {
+    string_to_replace: "#hot_standby = on",
+    replace_with: "hot_standby = on"
+    }
+  - {
+    string_to_replace: "data_directory = '/var/lib/postgresql/10/main'",
+    replace_with: "data_directory = '/usr/local/pgsql/data'"
+    }

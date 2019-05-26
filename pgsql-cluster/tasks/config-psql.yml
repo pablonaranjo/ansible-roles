@@ -1,0 +1,105 @@
+---
+
+- name: Change port number
+  replace:
+    path: /etc/postgresql/10/main/postgresql.conf
+    regexp: "port = 5432"
+    replace: "port = {{ psql_port }}"
+
+- name: Change listen address
+  replace:
+    path: /etc/postgresql/10/main/postgresql.conf
+    regexp: "#listen_addresses = 'localhost'"
+    replace: "listen_addresses = '*'"
+
+- name: Create replica folder
+  file:
+    path: /usr/local/pgsql/archive
+    state: directory
+    owner: postgres
+
+- name: Clean PGDATA
+  file:
+    state: absent
+    path: "/usr/local/pgsql/data/"
+
+- name: Start postgresql
+  service:
+    name: postgresql
+    state: started
+
+- name: Init DB cluster
+  shell: "/usr/lib/postgresql/10/bin/initdb -D /usr/local/pgsql/data"
+  become: yes
+  become_user: postgres
+  when: inventory_hostname in groups['pgsql-master']
+
+- name: Create replicate Role
+  postgresql_user:
+    name: replicate
+    port: '{{ psql_port }}'
+    password: '{{ psql_replicate_pwd }}'
+    role_attr_flags: LOGIN,REPLICATION
+  become: yes
+  become_user: postgres
+  when: inventory_hostname in groups['pgsql-master']
+
+- name: Add replication host in config
+  lineinfile:
+        path: /etc/postgresql/10/main/pg_hba.conf
+        line: "host    replication     replicate     {{ groups['pgsql-replica'][0] }}/32        md5"
+  when: inventory_hostname in groups['pgsql-master']
+
+- name: Config postgres REPLICATION
+  replace:
+    path: /etc/postgresql/10/main/postgresql.conf
+    regexp: "{{ item.string_to_replace }}"
+    replace: "{{ item.replace_with }}"
+  with_items: "{{ psql_master_replace_config }}"
+  when: inventory_hostname in groups['pgsql-master']
+
+- name: restart postgresql on master
+  service:
+    name: postgresql
+    state: restarted
+  when: inventory_hostname in groups['pgsql-master']
+
+- name: configure replication node(s)
+  replace:
+    path: /etc/postgresql/10/main/postgresql.conf
+    regexp: "{{ item.string_to_replace }}"
+    replace: "{{ item.replace_with }}"
+  with_items: "{{ psql_replica_replace_config }}"
+  when: inventory_hostname in groups['pgsql-replica']
+
+- name: create passfile for replicate
+  template:
+    src: pgpass
+    dest: /var/lib/postgresql/.pgpass
+    owner: postgres
+    mode: 0600
+  when: inventory_hostname in groups['pgsql-replica']
+
+- name: Clean PGDATA
+  file:
+    state: absent
+    path: "/usr/local/pgsql/data/"
+  when: inventory_hostname in groups['pgsql-replica']
+
+- name: execute pg_basebackup
+  shell: "/usr/lib/postgresql/10/bin/pg_basebackup -h {{ groups['pgsql-master'][0] }} -p {{ psql_port }} -D /usr/local/pgsql/data -P -U replicate --wal-method=stream"
+  become: yes
+  become_user: postgres
+  when: inventory_hostname in groups['pgsql-replica']
+
+- name: create Recovery.conf
+  template:
+    src: recovery.conf
+    dest: /usr/local/pgsql/data/recovery.conf
+  when: inventory_hostname in groups['pgsql-replica']
+
+- name: restart postgresql on replica
+  service:
+    name: postgresql
+    state: restarted
+  when: inventory_hostname in groups['pgsql-replica']

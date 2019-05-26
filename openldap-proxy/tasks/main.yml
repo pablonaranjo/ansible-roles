@@ -1,0 +1,5 @@
+---
+# tasks file for openldap-proxy
+
+- import_tasks: install-packages.yml
+- import_tasks: configure-openldap-proxy.yml

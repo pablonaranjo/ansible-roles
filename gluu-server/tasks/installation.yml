@@ -1,0 +1,25 @@
+---
+- name: Add Gluu GPG Key
+  apt_key:
+    url: https://repo.gluu.org/ubuntu/gluu-apt.key
+    state: present
+
+- name: Add Gluu Repository
+  apt_repository:
+    repo: deb https://repo.gluu.org/ubuntu/ bionic main
+    state: present
+
+- name: Install gluu dependencies
+  apt:
+    name: "{{ gluu_dependencies }}"
+    update_cache: yes
+
+- name: Install pyDes
+  pip:
+    name: pyDes
+    executable: pip
+    
+- name: Install gluu
+  apt:
+    name: "{{ gluu_package }}"
+    update_cache: yes

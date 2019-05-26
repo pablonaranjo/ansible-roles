@@ -1,0 +1,5 @@
+---
+# tasks file for vmware-ubuntu-server
+
+- include_tasks: create-vm.yml
+- include_tasks: set-vm-network.yml

@@ -1,0 +1,74 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+:ICMP_IN - [0:0]
+:ICMP_OUT - [0:0]
+:TCP_IN - [0:0]
+:TCP_OUT - [0:0]
+:UDP_IN - [0:0]
+:UDP_OUT - [0:0]
+-A INPUT -p tcp -m tcp --tcp-flags ACK ACK -m comment --comment "Allow TCP ACK packets [input]" -j ACCEPT
+-A INPUT -i lo -m comment --comment "Allow loopback [input]" -j ACCEPT
+-A INPUT -m limit --limit 2/min -m comment --comment "Log dropped INVALID TCP packets [input]" -j LOG --log-prefix "iptables (invalid in): " --log-level 7
+-A INPUT -m conntrack --ctstate INVALID -m comment --comment "Drop all INVALID TCP packets [input]" -j DROP
+-A INPUT -p icmp -m comment --comment "Pass ICMP connections to ICMP IN chain [input]" -j ICMP_IN
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -m comment --comment "Allow RELATED and ESTABLISHED TCP connections [input]" -j ACCEPT
+-A INPUT -p udp -m conntrack --ctstate NEW -m comment --comment "Pass NEW UDP connections to UDP IN chain [input]" -j UDP_IN
+-A INPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -m conntrack --ctstate NEW -m comment --comment "Pass NEW TCP connections to TCP IN chain [input]" -j TCP_IN
+-A INPUT -m limit --limit 2/min -m comment --comment "Log all other rejected packets at the end of chain [input]" -j LOG --log-prefix "iptables (in): " --log-level 7
+-A INPUT -m comment --comment "Reject all other packets [input]" -j REJECT --reject-with icmp-proto-unreachable
+-A OUTPUT -p tcp -m tcp --tcp-flags ACK ACK -m comment --comment "Allow TCP ACK packets [output]" -j ACCEPT
+-A OUTPUT -o lo -m comment --comment "Allow loopback [output]" -j ACCEPT
+-A OUTPUT -p icmp -m comment --comment "Pass ICMP connections to ICMP OUT chain [output]" -j ICMP_OUT
+-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -m comment --comment "Allow RELATED and ESTABLISHED TCP connections [output]" -j ACCEPT
+-A OUTPUT -p udp -m conntrack --ctstate NEW -m comment --comment "Pass NEW UDP connections to UDP OUT chain [output]" -j UDP_OUT
+-A OUTPUT -p tcp -m tcp --tcp-flags FIN,SYN,RST,ACK SYN -m conntrack --ctstate NEW -m comment --comment "Pass NEW TCP connections to TCP OUT chain [output]" -j TCP_OUT
+-A OUTPUT -m limit --limit 2/min -m comment --comment "Reject all other packets at the end of chain [input]" -j LOG --log-prefix "iptables (out): " --log-level 7
+-A OUTPUT -m comment --comment "Reject all other packets [output]" -j REJECT --reject-with icmp-proto-unreachable
+-A ICMP_IN -p icmp -m icmp --icmp-type 0 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow pinging other machines [input]" -j ACCEPT
+-A ICMP_IN -p icmp -m icmp --icmp-type 3 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow destination unreachable [input]" -j ACCEPT
+-A ICMP_IN -p icmp -m icmp --icmp-type 8 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow ping [input]" -j ACCEPT
+-A ICMP_IN -p icmp -m icmp --icmp-type 11 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow time exceeded [input]" -j ACCEPT
+-A ICMP_IN -p icmp -m limit --limit 2/min -m comment --comment "Log dropped or rejected ICMP packets at the end of chain [input]" -j LOG --log-prefix "iptables (icmp in): " --log-level 7
+-A ICMP_IN -p icmp -m comment --comment "Drop ICMP packets at the end of chain [input]" -j DROP
+-A ICMP_IN -p icmp -m comment --comment "Reject ICMP packets at the end of chain [input]" -j REJECT --reject-with icmp-proto-unreachable
+-A ICMP_OUT -p icmp -m icmp --icmp-type 0 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow ping [output]" -j ACCEPT
+-A ICMP_OUT -p icmp -m icmp --icmp-type 3 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow destination unreachable [output]" -j ACCEPT
+-A ICMP_OUT -p icmp -m icmp --icmp-type 8 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow pinging other machines [output]" -j ACCEPT
+-A ICMP_OUT -p icmp -m icmp --icmp-type 11 -m conntrack --ctstate NEW,RELATED,ESTABLISHED -m comment --comment "Allow time exceeded [output]" -j ACCEPT
+-A ICMP_OUT -p icmp -m limit --limit 2/min -m comment --comment "Log dropped or rejected ICMP packets at the end of chain [output]" -j LOG --log-prefix "iptables (icmp out): " --log-level 7
+-A ICMP_OUT -p icmp -m comment --comment "Drop all other ICMP packets [output]" -j DROP
+-A ICMP_OUT -p icmp -m comment --comment "Reject all other ICMP packets [output]" -j REJECT --reject-with icmp-proto-unreachable
+-A TCP_IN -s 10.100.7.0/24 -p tcp -m tcp -m comment --comment "Allow admin access over TCP [input]" -j ACCEPT
+-A TCP_IN -i {{ ansible_default_ipv4.interface }} -p tcp -m limit --limit 2/min -m recent --update --seconds 60 --name TCP-PORTSCAN --mask 255.255.255.255 --rsource -m comment --comment "Log rejected recent TCP-PORTSCAN list hosts on public interface [input]" -j LOG --log-prefix "iptables (tcp scan): " --log-level 7
+-A TCP_IN -i {{ ansible_default_ipv4.interface }} -p tcp -m recent --update --seconds 60 --name TCP-PORTSCAN --mask 255.255.255.255 --rsource -m comment --comment "Reject recent TCP-PORTSCAN list hosts on public interface [input]" -j REJECT --reject-with tcp-reset
+-A TCP_IN -p tcp -m limit --limit 2/min -m comment --comment "Log rejected TCP packets at the end of chain [input]" -j LOG --log-prefix "iptables (tcp in): " --log-level 7
+-A TCP_IN -p tcp -m recent --set --name TCP-PORTSCAN --mask 255.255.255.255 --rsource -m comment --comment "Reject all other TCP packets at the end of chain and add these to TCP-PORTSCAN list [input]" -j REJECT --reject-with tcp-reset
+-A TCP_OUT -p tcp -m tcp --dport 80 -m comment --comment "Allow outgoing HTTP [output] # this needs to be via Squid" -j ACCEPT
+-A TCP_OUT -p tcp -m tcp --dport 443 -m comment --comment "Allow outgoing HTTPS [output] # this needs to be via Squid" -j ACCEPT
+-A TCP_OUT -p tcp -m limit --limit 2/min -m comment --comment "Log all rejected TCP packets at the end of chain [output]" -j LOG --log-prefix "iptables (tcp out): " --log-level 7
+-A TCP_OUT -p tcp -m comment --comment "Reject all other TCP packets [output]" -j REJECT --reject-with tcp-reset
+-A UDP_IN -s 10.100.7.0/24 -p udp -m udp -m comment --comment "Allow admin access over UDP [input]" -j ACCEPT
+-A UDP_IN -i {{ ansible_default_ipv4.interface }} -p udp -m limit --limit 2/min -m recent --update --seconds 60 --name UDP-PORTSCAN --mask 255.255.255.255 --rsource -m comment --comment "Log rejected recent UDP-PORTSCAN list hosts on public interface [input]" -j LOG --log-prefix "iptables (udp scan): " --log-level 7
+-A UDP_IN -i {{ ansible_default_ipv4.interface }} -p udp -m recent --update --seconds 60 --name UDP-PORTSCAN --mask 255.255.255.255 --rsource -m comment --comment "Reject recent UDP-PORTSCAN list hosts on public interface [input]" -j REJECT --reject-with icmp-port-unreachable
+-A UDP_IN -p udp -m limit --limit 2/min -m comment --comment "Log rejected UDP packets at the end of chain [input]" -j LOG --log-prefix "iptables (udp in): " --log-level 7
+-A UDP_IN -p udp -m recent --set --name UDP-PORTSCAN --mask 255.255.255.255 --rsource -m comment --comment "Reject all other UDP packets at the end of chain and add these to UDP-PORTSCAN list [input]" -j REJECT --reject-with icmp-port-unreachable
+-A UDP_OUT -d 10.100.32.32/32 -p udp -m udp --dport 53 -m comment --comment "Allow DNS resolutions to Burfa.net internal server over UDP [output]" -j ACCEPT
+-A UDP_OUT -d 10.100.32.23/32 -p udp -m udp --dport 53 -m comment --comment "Allow DNS resolutions to Burfa.net internal server over UDP [output]" -j ACCEPT
+-A UDP_OUT -d 10.100.32.21/32 -p udp -m udp --dport 123 -m comment --comment "Allow NTP queries to Burfa.net internal server over UDP [output]" -j ACCEPT
+-A UDP_OUT -p udp -m limit --limit 2/min -m comment --comment "Log all rejected UDP packets at the end of chain [output]" -j LOG --log-prefix "iptables (udp out): " --log-level 7
+-A UDP_OUT -p udp -m comment --comment "Reject all other UDP packets [output]" -j REJECT --reject-with icmp-port-unreachable
+COMMIT
+*raw
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A PREROUTING -i {{ ansible_default_ipv4.interface }} -m rpfilter --invert -m limit --limit 2/min -m comment --comment "Log blocked reserved local address packets incoming from the internet or local network on public interface [input]" -j LOG --log-prefix "iptables (rpfilter in): " --log-level 7
+-A PREROUTING -i {{ ansible_default_ipv4.interface }} -m rpfilter --invert -m comment --comment "Block reserved local address packets incoming from the internet or local network on public interface [input]" -j DROP
+COMMIT
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+COMMIT

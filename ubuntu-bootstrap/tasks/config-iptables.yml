@@ -1,0 +1,40 @@
+---
+
+- name: Gathering facts
+  setup:
+  tags:
+    - config-iptables
+
+- name: Copy rsyslog file
+  copy:
+    src: 10-iptables.conf
+    dest: /etc/rsyslog.d/10-iptables.conf
+  notify: restart rsyslog
+  tags:
+    - config-iptables
+
+- name: Copy logrotate file
+  copy:
+    src: iptables
+    dest: /etc/logrotate.d/iptables
+  tags:
+    - config-iptables
+
+- name: install iptables-persistent
+  apt:
+    name: iptables-persistent
+    update_cache: yes
+  tags:
+    - config-iptables
+
+- name: set iptables file
+  template:
+    src: iptables-restore.j2
+    dest: /etc/iptables/rules.v4
+  tags:
+    - config-iptables
+
+- name: restore iptables
+  shell: /sbin/iptables-restore < /etc/iptables/rules.v4
+  tags:
+    - config-iptables

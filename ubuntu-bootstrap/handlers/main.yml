@@ -1,0 +1,12 @@
+---
+# handlers file for ubuntu-bootstrap
+
+  - name: restart sshd
+    service: name=sshd state=restarted
+
+  - name: restart rsyslog
+    service: name=rsyslog state=restarted
+
+  - name: restart timedatactl
+    become: true
+    shell: "timedatectl set-ntp off && timedatectl set-ntp on"

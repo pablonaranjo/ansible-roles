@@ -1,0 +1,33 @@
+---
+# vars file for freeradius
+
+freeradius_packages:
+  - freeradius
+
+home_server_packages:
+  - krb5-user
+  - samba
+  - sssd
+  - chrony
+  - python3-pexpect
+  - libnss-winbind
+
+active_directory_workgroup: <>
+active_directory_domain: <>
+active_directory_fqdn: <>
+netbios_name: <>
+default_realm: <>
+
+default_freeradius_secret: <> #localhost
+freeradius_secret: <>
+
+ad_user: <>
+ad_password: <>
+
+freeradius_client:
+  - network: <proxy_ip/32>
+  - network: <proxy_ip/32>
+
+freeradius_proxy_client:
+  - network: <client_network>
+  - network: <client_network>

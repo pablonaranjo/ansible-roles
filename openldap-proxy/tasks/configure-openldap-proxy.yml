@@ -1,0 +1,16 @@
+---
+
+- name: Configure slapd.conf
+  template:
+    src: slapd.conf.j2
+    dest: /etc/ldap/slapd.conf
+
+- name: remove slapd.d folder
+  file:
+    state: absent
+    path: /etc/ldap/slapd.d/
+
+- name: Restart slapd
+  service:
+    name: slapd
+    state: restarted

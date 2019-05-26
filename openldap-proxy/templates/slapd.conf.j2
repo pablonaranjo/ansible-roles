@@ -1,0 +1,29 @@
+### Schema includes ###########################################################
+include /etc/ldap/schema/core.schema
+include /etc/ldap/schema/cosine.schema
+include /etc/ldap/schema/inetorgperson.schema
+include /etc/ldap/schema/nis.schema
+
+## Module paths ##############################################################
+modulepath              /usr/lib/ldap/
+moduleload              back_ldap
+moduleload	            back_hdb
+moduleload              rwm
+
+# Main settings ###############################################################
+pidfile                 /var/run/slapd/slapd.pid
+argsfile                /var/run/slapd/slapd.args
+sizelimit 500
+tool-threads 1
+
+### Database definition (Proxy to AD) #########################################
+database                ldap
+readonly                yes
+protocol-version        3
+suffix                  "{{ ad_base_dn }}"
+rebind-as-user          yes
+uri                     "ldaps://{{ ad_hostname }}"
+chase-referrals         yes
+idassert-bind bindmethod=simple
+	                      binddn="{{ ad_root_dn }}"
+	                      credentials="{{ ad_bind_pass }}"

@@ -1,0 +1,68 @@
+---
+# vars file for vmware-ubuntu-server
+
+#Vcenter vars
+vmware_vcenter_hostname: <vcenter>
+vmware_username: <username>
+vmware_password: <password>
+
+#VM Detail
+vmware_vm_hostname: <vm_hostname>
+# folder. Could be:
+# VMs/Estonia/Cyberland/Infrastructure/Production
+# VMs/Estonia/Cyberland/Infrastructure/Test
+vmware_vm_folder: <vm_folder>
+
+# datastore. Select one of:
+# Storwize_R6_000
+# Storwize_R6_001
+# Storwize_R6_002
+# Storwize_R6_003
+# Storwize_R6_004
+vmware_vm_datastore: <datastore>
+
+# vlan. Select one of:
+# EE-ACO-LKM-STAG
+# EE-BC-CORE-DC-PROD
+# EE-BC-CORE-PROD
+# EE-BC-HIDN-DNS-PROD
+# EE-BC-INFR-PROD
+# EE-BC-PUB-PROD
+# EE-BC-SEC-AUR-PROD
+# EE-BC-SEC-B83-PROD
+# EE-BC-SEC-LAKI-PROD
+# EE-BC-SEC-SCLA-PROD
+# EE-BC-VPN-OVPN-PROD
+# EE-CL-INFR-PROD
+# EE-CL-SHAR-TEST-T1
+# EE-CL-SHAR-TEST-T2
+# EE-HC-HF-STAG
+# EE-HC-LAKI-PROD
+# EE-HC-MBA-STAG
+# EE-HC-MFM-PROD
+# EE-HC-MFM-STAG
+vmware_vm_network: <vlan>
+vmware_vm_ip: <vm_ip>
+vmware_vm_gateway: <vmware_vm_gateway>
+vmware_vm_dns1: <dns1>
+vmware_vm_dns2: <dns1>
+vmware_dns_search: <search_domain>
+vmware_vm_size_disk: <size_disk_gb>
+vmware_vm_memory: <memory_in_mb>
+vmware_vm_cpus: <number_of_cpu>
+vmware_vm_os: <os_distro> #i.e. ubuntu64Guest
+vmware_datacenter: <datacenter> #i.e EE-LVRA-TORN
+
+# template. Select:
+# ubuntu-base
+vmware_vm_template: ubuntu18-base
+
+#esx_host. Select one of:
+# esx1.hc.local
+# esx2.hc.local
+# esx3.hc.local
+vmware_esxi_host: <esx_host>
+
+ubuntu_local_user: <local_admin_user>
+ubuntu_local_pass: <local_admin_pass>
+ubuntu_sudo_pass: <local_admin_pass>

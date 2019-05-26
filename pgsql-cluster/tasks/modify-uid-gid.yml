@@ -1,0 +1,39 @@
+---
+
+- name: ensure postgres service not running
+  service:
+    name: postgresql
+    state: stopped
+
+- name: kill postgres process
+  shell: pkill -u postgres
+  register: kill_postgres
+  failed_when: kill_postgres.rc != 1 and kill_postgres.rc != 0
+
+- name: Get current postgres gid
+  shell: id -u postgres
+  register: postgres_old_uid
+
+- name: Get current postgres uid
+  shell: id -g postgres
+  register: postgres_old_gid
+
+- name: Change UID for postgres
+  user:
+    name: postgres
+    uid: "{{ postgres_uid }}"
+
+- name: Change GID for postgres
+  group:
+    name: postgres
+    gid: "{{ postgres_gid }}"
+
+- name: change group old files
+  shell: find / -group 114 -exec chgrp -h postgres {} \;
+  register: chgrp_postgres
+  failed_when: chgrp_postgres.rc != 1 and chgrp_postgres.rc != 0
+
+- name: change owner old files
+  shell: find / -user 111 -exec chown -h postgres {} \;
+  register: chown_postgres
+  failed_when: chown_postgres.rc != 1 and chown_postgres.rc != 0

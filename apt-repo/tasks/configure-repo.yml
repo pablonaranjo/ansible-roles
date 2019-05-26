@@ -1,0 +1,26 @@
+---
+- name: Create repo folder
+  file:
+      path: /var/www/html/ubuntu
+      state: directory
+      owner: www-data
+      group: www-data
+
+- name: Create repo folder - var
+  file:
+      path: /var/www/html/ubuntu/var
+      state: directory
+      owner: www-data
+      group: www-data
+
+- name: Configure mirror
+  copy:
+    src: mirror.list
+    dest: /etc/apt/mirror.list
+    backup: true
+
+- name: Configure repo
+  copy:
+    remote_src: true
+    src: /var/spool/apt-mirror/var/postmirror.sh
+    dest: /var/www/html/ubuntu/var/postmirror.sh

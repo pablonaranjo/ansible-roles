@@ -1,0 +1,10 @@
+/var/log/iptables.log
+{
+        rotate 8
+        weekly
+        missingok
+        compress
+        delaycompress
+        copytruncate
+        notifempty
+}

@@ -1,0 +1,1 @@
+{{ groups['master'][0] }}:30501:*:replicate:{{ psql_replicate_pwd }}

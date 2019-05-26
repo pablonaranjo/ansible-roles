@@ -1,0 +1,50 @@
+---
+
+- name: Create Groups
+  group:
+    name: "{{ item.name }}"
+    gid: "{{ item.gid }}"
+  with_items: "{{ groups_to_create }}"
+  tags:
+    - create-users
+
+- name: Add users
+  user:
+    name: "{{ item.name }}"
+    comment: "{{ item.fullname }}"
+    uid: "{{ item.uid }}"
+    groups: "{{ item.groups }}"
+    shell: /bin/bash
+  with_items: "{{ users_to_create }}"
+  tags:
+    - create-users
+
+- name: set initial password for users
+  shell: echo "{{ item.name }}":hashcoins | chpasswd && passwd -e "{{ item.name }}"
+  with_items: "{{ users_to_create }}"
+  tags:
+    - create-users
+
+- name: Create ssh folder
+  file:
+    path: /home/{{ item.name }}/.ssh
+    state: directory
+    mode: 0700
+    owner: "{{ item.name }}"
+    group: "{{ item.group }}"
+  with_items: "{{ users_to_create }}"
+  tags:
+    - create-users
+
+- name: Add keys
+  lineinfile:
+    dest: /home/{{ item.name }}/.ssh/authorized_keys
+    state: present
+    create: yes
+    line: "{{ item.auth_key }}"
+    owner: "{{ item.name }}"
+    group: "{{ item.group }}"
+    mode: 0644
+  with_items: "{{ users_to_create }}"
+  tags:
+    - create-users

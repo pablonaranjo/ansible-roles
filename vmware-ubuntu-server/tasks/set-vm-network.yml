@@ -1,0 +1,71 @@
+---
+- name: Restart VM
+  vmware_guest:
+    validate_certs: no
+    datacenter: "{{ vmware_datacenter }}"
+    hostname: "{{ vmware_vcenter_hostname }}"
+    username: "{{ vmware_username }}"
+    password: "{{ vmware_password }}"
+    name: "{{ vmware_vm_hostname }}"
+    state: restarted
+    
+- name: Wait 600 seconds for vm connection to become reachable/usable
+  wait_for_connection:
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups.new_vm }}"
+
+- name: remove server from known_hosts file
+  known_hosts:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ groups.new_vm }}"
+
+- name: Gathering facts
+  setup:
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups.new_vm }}"
+
+- name: Change HostName
+  become: true
+  hostname:
+    name: "{{ vmware_vm_hostname }}"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups.new_vm }}"
+
+- name: Set Right IP - Netplan
+  become: true
+  template:
+    src: 50-cloud-init.yaml.j2
+    dest: /etc/netplan/50-cloud-init.yaml
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups.new_vm }}"
+
+- name: Generating Netplan Configuration
+  become: true
+  command: netplan generate
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups.new_vm }}"
+
+- name: Change NIC Network in VMware
+  vmware_guest:
+    validate_certs: no
+    datacenter: "{{ vmware_datacenter }}"
+    hostname: "{{ vmware_vcenter_hostname }}"
+    username: "{{ vmware_username }}"
+    password: "{{ vmware_password }}"
+    name: "{{ vmware_vm_hostname }}"
+    networks:
+    -   device_type: vmxnet3
+        name: "{{ vmware_vm_network }}"
+        start_connected: true
+
+- name: Restart VM
+  vmware_guest:
+    validate_certs: no
+    datacenter: "{{ vmware_datacenter }}"
+    hostname: "{{ vmware_vcenter_hostname }}"
+    username: "{{ vmware_username }}"
+    password: "{{ vmware_password }}"
+    name: "{{ vmware_vm_hostname }}"
+    state: restarted
+    wait_for_ip_address: yes

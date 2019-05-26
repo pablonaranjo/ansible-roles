@@ -1,0 +1,7 @@
+---
+# handlers file for apt-repo
+
+- name: enable apache
+  systemd:
+    name: apache2
+    enabled: yes

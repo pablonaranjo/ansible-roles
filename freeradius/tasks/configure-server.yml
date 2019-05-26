@@ -1,0 +1,130 @@
+---
+
+- name: configure smb
+  template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+  notify: restart samba
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure kerberos
+  template:
+    src: krb5.conf.j2
+    dest: /etc/krb5.conf
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure chrony
+  template:
+    src: chrony.conf.j2
+    dest: /etc/chrony/chrony.conf
+  notify: restart chrony
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure sssd
+  template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: 0600
+  notify: restart sssd
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure nsswitch
+  copy:
+    src: nsswitch.conf
+    dest: /etc/nsswitch.conf
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure freeradius
+  copy:
+    src: radiusd.conf
+    dest: /etc/freeradius/3.0/radiusd.conf
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure proxy.conf
+  template:
+    src: proxy.conf.j2
+    dest: /etc/freeradius/3.0/proxy.conf
+  # notify: restart freeradius
+  when: inventory_hostname in groups['freeradius-proxy']
+
+- name: clean sites-enabled
+  file:
+    state: absent
+    path: /etc/freeradius/3.0/sites-enabled/
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: Ensures sites-enabled dir exists
+  file:
+    path: /etc/freeradius/3.0/sites-enabled
+    state: directory
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure module mschap
+  template:
+    src: mschap.j2
+    dest: /etc/freeradius/3.0/mods-enabled/mschap
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure module clients.conf
+  template:
+    src: clients.conf.j2
+    dest: /etc/freeradius/3.0/clients.conf
+
+- name: configure mschapv2
+  copy:
+    src: mschapv2
+    dest: /etc/freeradius/3.0/sites-available/mschapv2
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: configure inner-tunnel
+  copy:
+    src: inner-tunnel
+    dest: /etc/freeradius/3.0/sites-available/inner-tunnel
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: symlink mschapv2
+  file:
+    src: /etc/freeradius/3.0/sites-available/mschapv2
+    dest: /etc/freeradius/3.0/sites-enabled/mschapv2
+    state: link
+    force: true
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: symlink inner-tunnel
+  file:
+    src: /etc/freeradius/3.0/sites-available/inner-tunnel
+    dest: /etc/freeradius/3.0/sites-enabled/inner-tunnel
+    state: link
+    force: true
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: add freeradius user to winbind group
+  user:
+    name: freerad
+    groups: winbindd_priv
+    append: yes
+  when: inventory_hostname in groups['freeradius-home']
+
+- name: allow connections in iptables
+  iptables:
+    chain: UDP_IN
+    action: insert
+    protocol: udp
+    destination_port: 1812,1813
+    match: multiport
+    jump: ACCEPT
+    comment: Accept UDP Freeradius connections [input].
+
+- name: allow connections in iptables
+  iptables:
+    chain: UDP_OUT
+    action: insert
+    protocol: udp
+    destination_port: 1812,1813
+    match: multiport
+    jump: ACCEPT
+    comment: Accept UDP Freeradius connections [output].
+  when: inventory_hostname in groups['freeradius-proxy']
+  notify: restart freeradius

@@ -1,0 +1,14 @@
+[libdefaults]
+	default_realm = {{ default_realm }}
+	kdc_timesync = 1
+	ccache_type = 4
+	forwardable = true
+	proxiable = true
+	fcc-mit-ticketflags = true
+  ticket_lifetime = 24h #
+  renew_lifetime = 7d
+[realms]
+	{{ default_realm }} = {
+		kdc = {{ active_directory_fqdn }}
+		admin_server = {{ active_directory_fqdn }}
+	}

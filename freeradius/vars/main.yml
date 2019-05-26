@@ -1,0 +1,34 @@
+---
+# vars file for freeradius
+
+freeradius_packages:
+  - freeradius
+
+home_server_packages:
+  - krb5-user
+  - samba
+  - sssd
+  - chrony
+  - python3-pexpect
+  - libnss-winbind
+
+active_directory_workgroup: AD
+active_directory_domain: ad.burfa.net
+active_directory_fqdn: dc1.ad.burfa.net
+active_directory_ip: 10.100.41.3
+default_realm: AD.BURFA.NET
+
+default_freeradius_secret: freeradius #for localhost
+
+freeradius_secret: hXAHX{ewy8ivbJ
+
+ad_user: pablo.naranjo
+ad_password: Pa$$w0rd
+
+
+freeradius_client:
+  - network: 10.100.32.41/32
+  - network: 10.100.32.42/32
+
+freeradius_proxy_client:
+  - network: 10.0.0.0/8

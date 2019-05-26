@@ -1,0 +1,22 @@
+---
+
+ - name: Set file descriptors - soft
+   lineinfile:
+    path: /etc/security/limits.conf
+    line: 'soft nofile 65535'
+
+ - name: Set file descriptors - hard
+   lineinfile:
+    path: /etc/security/limits.conf
+    line: 'hard nofile 262144'
+
+ - name: Set file descriptors - pam
+   lineinfile:
+    path: /etc/pam.d/login
+    line: 'session required pam_limits.so'
+
+ - name: Set file descriptors - file-max
+   command: "echo 65535 > /proc/sys/fs/file-max**"
+
+ - name: Set file descriptors - ulimit
+   shell: "ulimit -n 262144"

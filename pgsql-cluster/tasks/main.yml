@@ -1,0 +1,6 @@
+---
+# tasks file for pgsql-server
+
+- include_tasks: install-dependencies.yml
+- include_tasks: modify-uid-gid.yml
+- include_tasks: config-psql.yml

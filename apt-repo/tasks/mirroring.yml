@@ -1,0 +1,11 @@
+---
+
+- name: mirroring repo
+  shell: apt-mirror &
+
+- name: cron mirroring
+  cron:
+    name: "apt mirror"
+    minute: "0"
+    hour: "2"
+    job: "/usr/bin/apt-mirror"

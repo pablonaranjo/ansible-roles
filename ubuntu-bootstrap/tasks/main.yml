@@ -1,0 +1,15 @@
+---
+# tasks file for ubuntu-bootstrap
+
+- include_tasks: create-users.yml
+  tags:
+    - create-users
+- include_tasks: config-ssh.yml
+  tags:
+    - config-ssh
+- include_tasks: config-iptables.yml
+  tags:
+    - config-iptables
+- include_tasks: config-ntp.yml
+  tags:
+    - config-ntp

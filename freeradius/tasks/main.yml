@@ -1,0 +1,9 @@
+---
+# tasks file for freeradius
+
+- include_tasks: install-packages.yml
+
+- include_tasks: configure-server.yml
+
+- include_tasks: join-server-to-ad.yml
+  when: inventory_hostname in groups['freeradius-home']

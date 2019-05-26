@@ -1,0 +1,43 @@
+---
+# tasks file for vmware-ubuntu-server
+
+- name: Create VM in VMware
+  vmware_guest:
+    validate_certs: no
+    datacenter: "{{ vmware_datacenter }}"
+    hostname: "{{ vmware_vcenter_hostname }}"
+    username: "{{ vmware_username }}"
+    password: "{{ vmware_password }}"
+    name: "{{ vmware_vm_hostname }}"
+    template: "{{ vmware_vm_template }}"
+    state: poweredon
+    folder: "{{ vmware_vm_folder }}"
+    guest_id: "{{ vmware_vm_os }}"
+    esxi_hostname: "{{ vmware_esxi_host }}"
+    disk:
+    -   size_gb: "{{ vmware_vm_size_disk }}"
+        type: thin
+        datastore: "{{ vmware_vm_datastore }}"
+    networks:
+    -   device_type: vmxnet3
+        name: EE-CL-SHAR-TEST-T2
+        start_connected: true
+    hardware:
+      memory_mb: "{{ vmware_vm_memory }}"
+      num_cpus: "{{ vmware_vm_cpus }}"
+      scsi: paravirtual
+    wait_for_ip_address: yes
+  delegate_to: localhost
+  register: ubuntu_vm
+
+- debug:
+    var: ubuntu_vm
+
+- name: Add VM to inventory
+  add_host:
+    hostname: "{{ ubuntu_vm['instance']['hw_eth0']['ipaddresses'][0] }}"
+    group: new_vm
+    ansible_ssh_host: "{{ ubuntu_vm['instance']['hw_eth0']['ipaddresses'][0] }}"
+    ansible_ssh_user: "{{ ubuntu_local_user }}"
+    ansible_ssh_pass: "{{ ubuntu_local_pass }}"
+    ansible_sudo_pass: "{{ ubuntu_sudo_pass }}"

@@ -1,0 +1,6 @@
+---
+# vars file for apt-repo
+
+apt_packages:
+  - apache2
+  - apt-mirror
